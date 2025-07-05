@@ -1,0 +1,10 @@
+#version 460 core
+
+uniform sampler2D tex;
+
+in vec2 coord_int;
+out vec4 color;
+
+void main() {
+    color = texture(tex, coord_int);
+}
