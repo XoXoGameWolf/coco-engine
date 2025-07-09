@@ -86,7 +86,7 @@ Texture* renderer_createTexture(char* path) {
     glGenTextures(1, &texture->texture);
 
     glBindTexture(GL_TEXTURE_2D, texture->texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture->width, texture->height, 0, (texture->channels == 4 ? GL_RGBA : GL_RGB), GL_UNSIGNED_BYTE, texture->data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, (texture->channels == 4 ? GL_RGBA : GL_RGB), GL_UNSIGNED_BYTE, texture->data);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glGenerateMipmap(GL_TEXTURE_2D);
@@ -112,7 +112,7 @@ void renderer_updateTexture(Texture* texture) {
     glGenTextures(1, &texture->texture);
 
     glBindTexture(GL_TEXTURE_2D, texture->texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture->width, texture->height, 0, (texture->channels == 4 ? GL_RGBA : GL_RGB), GL_UNSIGNED_BYTE, texture->data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, (texture->channels == 4 ? GL_RGBA : GL_RGB), GL_UNSIGNED_BYTE, texture->data);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glGenerateMipmap(GL_TEXTURE_2D);
@@ -201,12 +201,12 @@ Mesh* renderer_createMeshFast(float* vertices, int vertices_size, float* coords,
 }
 
 Shader* renderer_createShader(char* vertexPath, char* fragmentPath) {
-    char* vertexShaderSourceDynamic = malloc(4096);
-    for(int i = 0; i < 4096; i++) {vertexShaderSourceDynamic[i] = 0;}
+    char* vertexShaderSourceDynamic = malloc(65536);
+    for(int i = 0; i < 65536; i++) {vertexShaderSourceDynamic[i] = 0;}
     readFile(vertexShaderSourceDynamic, vertexPath);
 
-    char* fragmentShaderSourceDynamic = malloc(4096);
-    for(int i = 0; i < 4096; i++) {fragmentShaderSourceDynamic[i] = 0;}
+    char* fragmentShaderSourceDynamic = malloc(65536);
+    for(int i = 0; i < 65536; i++) {fragmentShaderSourceDynamic[i] = 0;}
     readFile(fragmentShaderSourceDynamic, fragmentPath);
 
     const char* vertexShaderSource = vertexShaderSourceDynamic;

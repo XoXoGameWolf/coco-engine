@@ -6,13 +6,13 @@ int main() {
 
     window_fullscreen = true;
 
-    Texture* tex = renderer_createTexture("test.png");
+    Texture* tex = renderer_createTexture("resources/test.png");
     Mesh* mesh = renderer_createMeshFast(
         QUAD_VERTICES, sizeof(QUAD_VERTICES), 
         QUAD_COORDS, sizeof(QUAD_COORDS), 
         QUAD_INDICES, sizeof(QUAD_INDICES)
     );
-    Shader* shader = renderer_createShader("vert.glsl", "frag.glsl");
+    Shader* shader = renderer_createShader("resources/vert.glsl", "resources/frag.glsl");
 
     float mat[16];
 
@@ -27,7 +27,7 @@ int main() {
         window_update();
     }
 
-    renderer_destroy();
+    //renderer_destroy();
     window_destroy();
     return 0;
 }
