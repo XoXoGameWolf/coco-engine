@@ -21,7 +21,7 @@ build/$(NAME)-windows.zip: build/app.exe
 	zip -r build/$(NAME)-windows.zip $(NAME)
 	rm -rf $(NAME)
 
-build/$(NAME)-android.apk: android/key.keystore android/jni/include/coco/*
+build/$(NAME)-android.apk: android/key.keystore android/jni/include/coco/* src/* android/jni/include/*
 	cp -rf $(shell find resources/* -type f) android/res/raw
 	cp src/* android/jni/src
 	aapt package -f -m -J android/src -M android/AndroidManifest.xml -I $(ANDROID) -S android/res
