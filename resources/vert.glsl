@@ -1,4 +1,4 @@
-#version 460 core
+#version 310 es
 
 uniform mat4 mat;
 

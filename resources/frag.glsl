@@ -1,4 +1,5 @@
-#version 460 core
+#version 310 es
+precision mediump float;
 
 uniform sampler2D tex;
 

@@ -7,14 +7,8 @@
 
 #include <coco/file.c>
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
-
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include <stb_image_write.h>
 
 float QUAD_VERTICES[] = {
     0.5f, 0.5f, 0.0f,
@@ -36,23 +30,23 @@ int QUAD_INDICES[] = {
 };
 
 typedef struct {
-    int vbo;
+    unsigned int vbo;
     int size;
 } Buffer;
 
 typedef struct {
-    int vao;
+    unsigned int vao;
     int vertexCount;
 } Mesh;
 
 typedef struct {
-    int vertexShader;
-    int fragmentShader;
-    int program;
+    unsigned int vertexShader;
+    unsigned int fragmentShader;
+    unsigned int program;
 } Shader;
 
 typedef struct {
-    int texture;
+    unsigned int texture;
     int width;
     int height;
     int channels;
@@ -63,25 +57,17 @@ float renderer_red;
 float renderer_green;
 float renderer_blue;
 
-Buffer** renderer_buffers;
-Mesh** renderer_meshes;
-Shader** renderer_shaders;
-Texture** renderer_textures;
-
 void renderer_init(float red, float green, float blue) {
     renderer_red = red;
     renderer_green = green;
     renderer_blue = blue;
-
-    renderer_buffers = malloc(sizeof(Buffer*) * 4096);
-    renderer_meshes = malloc(sizeof(Mesh*) * 4096);
-    renderer_shaders = malloc(sizeof(Shader*) * 4096);
-    renderer_textures = malloc(sizeof(Texture*) * 4096);
 }
 
 Texture* renderer_createTexture(char* path, bool aliased) {
     Texture* texture = malloc(sizeof(Texture));
-    texture->data = stbi_load(path, &texture->width, &texture->height, &texture->channels, 0);
+    char* data = malloc(2097152); // 2,097,152 B = 2 MiB
+    readFile(data, path, 2097152);
+    texture->data = (char*)stbi_load_from_memory((unsigned char*)data, 2097152, &texture->width, &texture->height, &texture->channels, 0);
 
     glGenTextures(1, &texture->texture);
 
@@ -94,18 +80,12 @@ Texture* renderer_createTexture(char* path, bool aliased) {
     glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    for(int i = 0; i < 4096; i++) {
-        if(renderer_textures[i] == NULL) {
-            renderer_textures[i] = texture;
-            break;
-        }
-    }
-
     return texture;
 }
 
 void renderer_saveTexture(char* path, Texture* texture) {
-    stbi_write_bmp(path, texture->width, texture->height, texture->channels, texture->data);
+    // doesn't really work (i think) on android, but the function is here for desktop-mobile compatibility
+    //stbi_write_bmp(path, texture->width, texture->height, texture->channels, texture->data);
 }
 
 void renderer_updateTexture(Texture* texture, bool aliased) {
@@ -134,13 +114,6 @@ Buffer* renderer_createFloatBuffer(float* data, int size) {
     glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    for(int i = 0; i < 4096; i++) {
-        if(renderer_buffers[i] == NULL) {
-            renderer_buffers[i] = buffer;
-            break;
-        }
-    }
-
     return buffer;
 }
 
@@ -154,13 +127,6 @@ Buffer* renderer_createIntBuffer(int* data, int size) {
     glBindBuffer(GL_ARRAY_BUFFER, buffer->vbo);
     glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    for(int i = 0; i < 4096; i++) {
-        if(renderer_buffers[i] == NULL) {
-            renderer_buffers[i] = buffer;
-            break;
-        }
-    }
 
     return buffer;
 }
@@ -187,13 +153,6 @@ Mesh* renderer_createMesh(Buffer* vertexBuffer, Buffer* coordBuffer, Buffer* ind
 
     glBindVertexArray(0);
 
-    for(int i = 0; i < 4096; i++) {
-        if(renderer_meshes[i] == NULL) {
-            renderer_meshes[i] = mesh;
-            break;
-        }
-    }
-
     return mesh;
 }
 
@@ -207,11 +166,11 @@ Mesh* renderer_createMeshFast(float* vertices, int vertices_size, float* coords,
 Shader* renderer_createShader(char* vertexPath, char* fragmentPath) {
     char* vertexShaderSourceDynamic = malloc(65536);
     for(int i = 0; i < 65536; i++) {vertexShaderSourceDynamic[i] = 0;}
-    readFile(vertexShaderSourceDynamic, vertexPath);
+    readFile(vertexShaderSourceDynamic, vertexPath, 65536);
 
     char* fragmentShaderSourceDynamic = malloc(65536);
     for(int i = 0; i < 65536; i++) {fragmentShaderSourceDynamic[i] = 0;}
-    readFile(fragmentShaderSourceDynamic, fragmentPath);
+    readFile(fragmentShaderSourceDynamic, fragmentPath, 65536);
 
     const char* vertexShaderSource = vertexShaderSourceDynamic;
     const char* fragmentShaderSource = fragmentShaderSourceDynamic;
@@ -227,7 +186,7 @@ Shader* renderer_createShader(char* vertexPath, char* fragmentPath) {
     glGetShaderiv(shader->vertexShader, GL_COMPILE_STATUS, &success);
     if(!success) {
         glGetShaderInfoLog(shader->vertexShader, 512, NULL, infoLog);
-        printf("Vertex shader was not compiled. Info log: \n%s\n", infoLog);
+        __android_log_print(ANDROID_LOG_INFO, "Coco Engine", "Vertex shader was not compiled. Info log: \n%s\n", infoLog);
         exit(-1);
     }
     
@@ -238,7 +197,7 @@ Shader* renderer_createShader(char* vertexPath, char* fragmentPath) {
     glGetShaderiv(shader->fragmentShader, GL_COMPILE_STATUS, &success);
     if(!success) {
         glGetShaderInfoLog(shader->fragmentShader, 512, NULL, infoLog);
-        printf("Fragment shader was not compiled. Info log: \n%s\n", infoLog);
+        __android_log_print(ANDROID_LOG_INFO, "Coco Engine", "Fragment shader was not compiled. Info log: \n%s\n", infoLog);
         exit(-1);
     }
 
@@ -251,83 +210,11 @@ Shader* renderer_createShader(char* vertexPath, char* fragmentPath) {
     glGetProgramiv(shader->program, GL_LINK_STATUS, &success);
     if(!success) {
         glGetProgramInfoLog(shader->program, 512, NULL, infoLog);
-        printf("Shader program was not compiled. Info log: \n%s\n", infoLog);
+        __android_log_print(ANDROID_LOG_INFO, "Coco Engine", "Shader program was not linked. Info log: \n%s\n", infoLog);
         exit(-1);
     }
 
-    for(int i = 0; i < 4096; i++) {
-        if(renderer_shaders[i] == NULL) {
-            renderer_shaders[i] = shader;
-            break;
-        }
-    }
-
     return shader;
-}
-
-void renderer_deleteBuffer(Buffer* buffer) {
-    glDeleteBuffers(1, &buffer->vbo);
-
-    for(int i = 0; i < 4096; i++) {
-        if(renderer_buffers[i] == buffer) {
-            renderer_buffers[i] = NULL;
-            break;
-        }
-    }
-}
-
-void renderer_deleteMesh(Mesh* mesh) {
-    glDeleteVertexArrays(1, &mesh->vao);
-
-    for(int i = 0; i < 4096; i++) {
-        if(renderer_meshes[i] == mesh) {
-            renderer_meshes[i] = NULL;
-            break;
-        }
-    }
-}
-
-void renderer_deleteShader(Shader* shader) {
-    glDetachShader(shader->program, shader->vertexShader);
-    glDetachShader(shader->program, shader->fragmentShader);
-    glDeleteShader(shader->vertexShader);
-    glDeleteShader(shader->fragmentShader);
-    glDeleteProgram(shader->program);
-
-    for(int i = 0; i < 4096; i++) {
-        if(renderer_shaders[i] == shader) {
-            renderer_shaders[i] = NULL;
-            break;
-        }
-    }
-}
-
-void renderer_deleteTexture(Texture* texture) {
-    glDeleteTextures(1, &texture->texture);
-
-    for(int i = 0; i < 4096; i++) {
-        if(renderer_textures[i] == texture) {
-            renderer_textures[i] = NULL;
-            break;
-        }
-    }
-}
-
-void renderer_destroy() {
-    for(int i = 0; i < 4096; i++) {
-        if(renderer_buffers[i] != NULL) {
-            renderer_deleteBuffer(renderer_buffers[i]);
-        }
-        if(renderer_meshes[i] != NULL) {
-            renderer_deleteMesh(renderer_meshes[i]);
-        }
-        if(renderer_shaders[i] != NULL) {
-            renderer_deleteShader(renderer_shaders[i]);
-        }
-        if(renderer_textures[i] != NULL) {
-            renderer_deleteTexture(renderer_textures[i]);
-        }
-    }
 }
 
 void renderer_renderMesh(Mesh* mesh, Shader* shader) {
