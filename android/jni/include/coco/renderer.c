@@ -65,14 +65,16 @@ void renderer_init(float red, float green, float blue) {
 
 Texture* renderer_createTexture(char* path, bool aliased) {
     Texture* texture = malloc(sizeof(Texture));
-    char* data = malloc(2097152); // 2,097,152 B = 2 MiB
-    readFile(data, path, 2097152);
-    texture->data = (char*)stbi_load_from_memory((unsigned char*)data, 2097152, &texture->width, &texture->height, &texture->channels, 0);
+    char* data = malloc(4194304); // 4194304 B = 2 MiB
+    readFile(data, path, 4194304);
+    texture->data = (char*)stbi_load_from_memory((unsigned char*)data, 4194304, &texture->width, &texture->height, &texture->channels, 0);
 
     glGenTextures(1, &texture->texture);
 
     glBindTexture(GL_TEXTURE_2D, texture->texture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, (texture->channels == 4 ? GL_RGBA : GL_RGB), GL_UNSIGNED_BYTE, texture->data);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     if(aliased) {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
