@@ -11,7 +11,7 @@ float mat[16];
 void start() {
     renderer_init(0.2f, 0.4f, 0.6f);
 
-    tex = renderer_createTexture("resources/test.png", false);
+    tex = renderer_createTexture("resources/test.bmp", false);
     mesh = renderer_createMeshFast(
         QUAD_VERTICES, sizeof(QUAD_VERTICES),
         QUAD_COORDS, sizeof(QUAD_COORDS),
@@ -21,7 +21,7 @@ void start() {
 }
 
 void update() {
-
+    
 }
 
 void render() {

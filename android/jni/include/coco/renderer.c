@@ -65,8 +65,8 @@ void renderer_init(float red, float green, float blue) {
 
 Texture* renderer_createTexture(char* path, bool aliased) {
     Texture* texture = malloc(sizeof(Texture));
-    char* data = calloc(1, 4194304);
-    int bytesRead = readFile(data, path, 4194304);
+    char* data = calloc(1, 75497472);
+    int bytesRead = readFile(data, path, 75497472);
 
     if (bytesRead <= 0) {
         free(data);
@@ -100,7 +100,7 @@ Texture* renderer_createTexture(char* path, bool aliased) {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     }
 
-    //glGenerateMipmap(GL_TEXTURE_2D);
+    glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     free(data);
