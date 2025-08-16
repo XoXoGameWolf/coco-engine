@@ -1,35 +1,18 @@
 char* title = "Coco Engine";
+float bg_red = 0.0f;
+float bg_green = 0.0f;
+float bg_blue = 0.0f;
 
 #include <coco/coco.c>
 
-Mesh* mesh;
-Shader* shader;
 Texture* tex;
-
-float mat[16];
+Object* object;
 
 void start() {
-    renderer_init(0.2f, 0.4f, 0.6f);
-
-    tex = renderer_createTexture("resources/test.bmp", false);
-    mesh = renderer_createMeshFast(
-        QUAD_VERTICES, sizeof(QUAD_VERTICES),
-        QUAD_COORDS, sizeof(QUAD_COORDS),
-        QUAD_INDICES, sizeof(QUAD_INDICES)
-    );
-    shader = renderer_createShader("resources/vert.glsl", "resources/frag.glsl");
+    object = createTextured3D(getQuadMesh(), 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
+    setTextureProperty(object, createTexture("resources/test.bmp", false), "tex");
 }
 
 void update() {
-    
-}
-
-void render() {
-    renderer_createMat4Scale(mat, 1.0f, (float)window_width / (float)window_height, 1.0f);
-
-    renderer_setUniformTexture(shader, "tex", tex, 0);
-    renderer_setUniformMat4(shader, "mat", mat);
-
-    renderer_update();
-    renderer_renderMesh(mesh, shader);
+    object->rot_z = glfwGetTime() * 100.0f;
 }

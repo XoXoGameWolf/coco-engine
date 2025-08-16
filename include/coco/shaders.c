@@ -1,0 +1,107 @@
+#pragma once
+
+typedef struct {
+    Mesh* mesh;
+    Shader* shader;
+    float pos_x;
+    float pos_y;
+    float pos_z;
+    float rot_x;
+    float rot_y;
+    float rot_z;
+    float scl_x;
+    float scl_y;
+    float scl_z;
+} Object;
+
+char* vertex_2D = "#version 310 es\nprecision mediump float;\nprecision mediump int;\n\nuniform vec3 pos;\nuniform vec3 rot;\nuniform vec3 scl;\nuniform float aspect;\n\nin vec3 in_pos;\nin vec2 in_coord;\nout vec2 coord;\n\nvoid main() {\n    coord = in_coord;\n    gl_Position = vec4(\n        in_pos.x * scl.x * cos(rot.z / 360.0f * 6.282f) + in_pos.y * scl.y * sin(rot.z / 360.0f * 6.282f) + pos.x, \n        aspect * (in_pos.y * scl.y * cos(rot.z / 360.0f * 6.282f) - in_pos.x * scl.x * sin(rot.z / 360.0f * 6.282f) + pos.y), \n        0.0f, \n        1.0f\n    );\n}";
+char* vertex_3D = "#version 310 es\nprecision mediump float;\nprecision mediump int;\n\nuniform vec3 pos;\nuniform vec3 rot;\nuniform vec3 scl;\nuniform float aspect;\n\nin vec3 in_pos;\nin vec2 in_coord;\nout vec2 coord;\n\nvoid main() {\n    coord = in_coord;\n    vec3 position = in_pos * scl;\n    position = vec3(position.x, cos(rot.x / 360.0f * 6.282f) * position.y + sin(rot.x / 360.0f * 6.282f) * position.z, cos(rot.x / 360.0f * 6.282f) * position.z - sin(rot.x / 360.0f * 6.282f) * position.y);\n    position = vec3(cos(rot.y / 360.0f * 6.282f) * position.x + sin(rot.y / 360.0f * 6.282f) * position.z, position.y, cos(rot.y / 360.0f * 6.282f) * position.z - sin(rot.y / 360.0f * 6.282f) * position.x);\n    position = vec3(cos(rot.z / 360.0f * 6.282f) * position.x + sin(rot.z / 360.0f * 6.282f) * position.y, cos(rot.z / 360.0f * 6.282f) * position.y - sin(rot.z / 360.0f * 6.282f) * position.x, position.z);\n    position = position + pos;\n    gl_Position = vec4(position.x, aspect * position.y, 0.0f, position.z);\n}";
+
+char* fragment_basic = "#version 310 es\nprecision mediump float;\nprecision mediump int;\n\nuniform vec3 col;\n\nin vec2 coord;\nout vec4 out_color;\n\nvoid main() {\n    out_color = vec4(col, 1.0f);\n}";
+char* fragment_textured = "#version 310 es\nprecision mediump float;\nprecision mediump int;\n\nuniform sampler2D tex;\n\nin vec2 coord;\nout vec4 out_color;\n\nvoid main() {\n    out_color = texture(tex, coord);\n}";
+
+Object* objects[1024];
+
+void setTextureProperty(Object* object, Texture* texture, char* property) {
+    setUniformTexture(object->shader, property, texture, 0);
+}
+
+void setColorProperty(Object* object, float r, float g, float b, char* property) {
+    setUniformVec3(object->shader, property, r, g, b);
+}
+
+Object* createObject(Mesh* mesh, char* vertex, char* fragment, 
+        float pos_x, float pos_y, float pos_z, 
+        float rot_x, float rot_y, float rot_z,
+        float scl_x, float scl_y, float scl_z) {
+    Object* object = malloc(sizeof(Object));
+
+    object->mesh = mesh;
+    object->shader = createShaderRaw(vertex, fragment);
+    object->pos_x = pos_x;
+    object->pos_y = pos_y;
+    object->pos_z = pos_z;
+    object->rot_x = rot_x;
+    object->rot_y = rot_y;
+    object->rot_z = rot_z;
+    object->scl_x = scl_x;
+    object->scl_y = scl_y;
+    object->scl_z = scl_z;
+
+    for(int i = 0; i < 1024; i++) {
+        if(objects[i] == NULL) {
+            objects[i] = object;
+            break;
+        }
+    }
+
+    return object;
+}
+
+Object* createObject2D(Mesh* mesh, char* fragment, float pos_x, float pos_y, float rot_z, float scl_x, float scl_y) {
+    return createObject(mesh, vertex_2D, fragment, pos_x, pos_y, 0.0f, 0.0f, 0.0f, rot_z, scl_x, scl_y, 0.0f);
+}
+
+Object* createBasic2D(Mesh* mesh, float pos_x, float pos_y, float rot_z, float scl_x, float scl_y) {
+    return createObject2D(mesh, fragment_basic, pos_x, pos_y, rot_z, scl_x, scl_y);
+}
+
+Object* createTextured2D(Mesh* mesh, float pos_x, float pos_y, float rot_z, float scl_x, float scl_y) {
+    return createObject2D(mesh, fragment_textured, pos_x, pos_y, rot_z, scl_x, scl_y);
+}
+
+Object* createObject3D(Mesh* mesh, char* fragment, 
+        float pos_x, float pos_y, float pos_z, 
+        float rot_x, float rot_y, float rot_z,
+        float scl_x, float scl_y, float scl_z) {
+    return createObject(mesh, vertex_3D, fragment, pos_x, pos_y, pos_z, rot_x, rot_y, rot_z, scl_x, scl_y, scl_z);
+}
+
+Object* createBasic3D(Mesh* mesh, 
+        float pos_x, float pos_y, float pos_z,
+        float rot_x, float rot_y, float rot_z,
+        float scl_x, float scl_y, float scl_z) {
+    return createObject3D(mesh, fragment_basic, pos_x, pos_y, pos_z, rot_x, rot_y, rot_z, scl_x, scl_y, scl_z);
+}
+
+Object* createTextured3D(Mesh* mesh,
+        float pos_x, float pos_y, float pos_z,
+        float rot_x, float rot_y, float rot_z,
+        float scl_x, float scl_y, float scl_z) {
+    return createObject3D(mesh, fragment_textured, pos_x, pos_y, pos_z, rot_x, rot_y, rot_z, scl_x, scl_y, scl_z);
+}
+
+void render() {
+    for(int i = 0; i < 1024; i++) {
+        Object* object = objects[i];
+        if(object == NULL) {
+            break;
+        }
+
+        setUniformVec3(object->shader, "pos", object->pos_x, object->pos_y, object->pos_z);
+        setUniformVec3(object->shader, "rot", object->rot_x, object->rot_y, object->rot_z);
+        setUniformVec3(object->shader, "scl", object->scl_x, object->scl_y, object->scl_z);
+        setUniformFloat(object->shader, "aspect", (float)width / (float)height);
+        renderMesh(object->mesh, object->shader);
+    }
+}
