@@ -34,7 +34,6 @@ void error_callback(int id, const char* description) {
 
 #include <coco/renderer.c>
 #include <coco/shaders.c>
-#include <coco/meshes.c>
 
 int main() {
     glfwSetErrorCallback(&error_callback);
@@ -62,6 +61,8 @@ int main() {
         exit(-1);
     }
 
+    glEnable(GL_DEPTH_TEST);
+
     float widthScale;
     float heightScale;
 
@@ -74,7 +75,7 @@ int main() {
 
     while(open) {
         glClearColor(bg_red, bg_green, bg_blue, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         update();
         render();

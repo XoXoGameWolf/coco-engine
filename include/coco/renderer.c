@@ -16,6 +16,8 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
 
+#include <cwobj.h>
+
 typedef struct {
     int vbo;
     int size;
@@ -132,7 +134,7 @@ Buffer* createIntBuffer(int* data, int size) {
     return buffer;
 }
 
-Mesh* createMesh(Buffer* vertexBuffer, Buffer* coordBuffer, Buffer* indexBuffer) {
+Mesh* createMesh(Buffer* vertexBuffer, Buffer* coordBuffer, Buffer* normalBuffer, Buffer* indexBuffer) {
     Mesh* mesh = malloc(sizeof(Mesh));
 
     mesh->vertexCount = indexBuffer->size / sizeof(int);
@@ -150,6 +152,11 @@ Mesh* createMesh(Buffer* vertexBuffer, Buffer* coordBuffer, Buffer* indexBuffer)
     glEnableVertexAttribArray(1);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+    glBindBuffer(GL_ARRAY_BUFFER, normalBuffer->vbo);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(2);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer->vbo);
 
     glBindVertexArray(0);
@@ -157,11 +164,16 @@ Mesh* createMesh(Buffer* vertexBuffer, Buffer* coordBuffer, Buffer* indexBuffer)
     return mesh;
 }
 
-Mesh* createMeshFast(float* vertices, int vertices_size, float* coords, int coords_size, int* indices, int indices_size) {
+Mesh* createMeshFast(
+        float* vertices, int vertices_size, 
+        float* coords, int coords_size, 
+        float* normals, int normals_size, 
+        int* indices, int indices_size) {
     Buffer* vertexBuffer = createFloatBuffer(vertices, vertices_size);
     Buffer* coordBuffer = createFloatBuffer(coords, coords_size);
+    Buffer* normalBuffer = createFloatBuffer(normals, normals_size);
     Buffer* indexBuffer = createIntBuffer(indices, indices_size);
-    return createMesh(vertexBuffer, coordBuffer, indexBuffer);
+    return createMesh(vertexBuffer, coordBuffer, normalBuffer, indexBuffer);
 }
 
 Shader* createShader(char* vertexPath, char* fragmentPath) {
@@ -451,4 +463,22 @@ void createMat4Multiply(float* mat, float* mat0, float* mat1) {
         }
     }
     memcpy(mat, mat2, 16 * sizeof(float));
+}
+
+Mesh* loadMesh(char* path) {
+    cwobj* mesh = cwobj_load(path, NULL);
+
+    float* vertices = mesh->geometry->vertice;
+    int vertex_count = mesh->geometry->vertice_n * 3 * sizeof(float);
+
+    float* coords = mesh->geometry->texcoord;
+    int coord_count = mesh->geometry->texcoord_n * 2 * sizeof(float);
+
+    float* normals = mesh->geometry->normal;
+    int normal_count = mesh->geometry->normal_n * 3 * sizeof(float);
+
+    int* indices = mesh->geometry->indice;
+    int index_count = mesh->geometry->indice_n * sizeof(int);
+
+    return createMeshFast(vertices, vertex_count, coords, coord_count, normals, normal_count, indices, index_count);
 }
