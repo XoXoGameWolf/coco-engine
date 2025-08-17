@@ -1455,7 +1455,6 @@ inline char *cwobj_objGetData(char *line) {
 inline cwobj_mtllib *cwobj_objLoadMtlib(const char *filename, unsigned int (*get_texture)(const char *filename)) {
     FILE *f = fopen(filename, "r");
     if (!f) {
-        fprintf(stderr, "cwobj_objLoadMtlib: failed to open .mtl '%s'\n", filename);
         return NULL;
     }
 
@@ -1625,10 +1624,6 @@ inline cwobj_mtllib *cwobj_objLoadMtlib(const char *filename, unsigned int (*get
 }
 
 inline cwobj *cwobj_load(const char *filename, unsigned int (*get_texture)(const char *filename)) {
-    fprintf(stdout, "cwobj_load: loading \"%s\"\n", filename);
-
-    fflush(stdout);
-
     FILE *f = fopen(filename, "r");
     if (!f) {
         fprintf(stderr, "cwobj_load: failed to open .obj \"%s\"\n", filename);
@@ -1732,7 +1727,6 @@ inline cwobj *cwobj_load(const char *filename, unsigned int (*get_texture)(const
 
                 mtlib = cwobj_objLoadMtlib(mtl_filename, get_texture);
                 if (!mtlib) {
-                    fprintf(stderr, "cwobj_load: failed to load .mtl \"%s\"\n", mtl_filename);
                 }
 
                 free(mtl_filename);
