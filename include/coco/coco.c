@@ -33,7 +33,7 @@ void error_callback(int id, const char* description) {
 }
 
 #include <coco/renderer.c>
-#include <coco/shaders.c>
+#include <coco/objects.c>
 
 int main() {
     glfwSetErrorCallback(&error_callback);
