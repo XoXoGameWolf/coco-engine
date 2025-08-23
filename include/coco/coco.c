@@ -34,6 +34,9 @@ void error_callback(int id, const char* description) {
 
 #include <coco/renderer.c>
 #include <coco/objects.c>
+#include <coco/input.c>
+
+Mesh* quad;
 
 int main() {
     glfwSetErrorCallback(&error_callback);
@@ -70,6 +73,39 @@ int main() {
 
     framebuffer_size_callback(window, (int)((float)1280 * widthScale), (int)((float)720 * heightScale));
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
+    float vertices[] = {
+        -1.0f, -1.0f, 0.0f,
+        1.0f, -1.0f, 0.0f,
+        -1.0f, 1.0f, 0.0f,
+        1.0f, 1.0f, 0.0f
+    };
+
+    float coords[] = {
+        0.0f, 0.0f,
+        1.0f, 0.0f,
+        0.0f, 1.0f,
+        1.0f, 1.0f
+    };
+
+    float normals[] = {
+        0.0f, 0.0f, -1.0f,
+        0.0f, 0.0f, -1.0f,
+        0.0f, 0.0f, -1.0f,
+        0.0f, 0.0f, -1.0f
+    };
+
+    int indices[] = {
+        0, 1, 3,
+        0, 2, 3
+    };
+
+    quad = createMeshFast(
+        vertices, sizeof(float) * 12, 
+        coords, sizeof(float) * 8, 
+        normals, sizeof(float) * 12, 
+        indices, sizeof(int) * 6
+    );
 
     start();
 
