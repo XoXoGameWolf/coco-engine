@@ -9,7 +9,17 @@
 
 void start();
 void update();
-void render();
 
-#include <coco/window.c>
+int width = 1280;
+int height = 720;
+
+bool lastFullscreen = false;
+bool fullscreen = false;
+bool open = true;
+
+JNIEnv* env;
+jobject res;
+
 #include <coco/renderer.c>
+#include <coco/objects.c>
+#include <coco/window.c>

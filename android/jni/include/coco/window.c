@@ -196,29 +196,25 @@ double glfwGetTime() {
     return (double)tv.tv_sec + (double)tv.tv_usec / 1000000;
 }
 
-GLFWwindow* window_window;
-
-JNIEnv* env;
-jobject res;
-
-int window_width = 1280;
-int window_height = 720;
-
-bool window_open = true;
-bool window_fullscreen = false;
+GLFWwindow* window;
 
 void Java_org_coco_MainActivity_start(JNIEnv* _env, jclass cls, jobject _res) {
     env = _env;
     res = _res;
 
+    glEnable(GL_DEPTH_TEST);
+
     start();
 
-    if(!window_open) exit(0);
+    if(!open) exit(0);
 }
 
 void Java_org_coco_MainActivity_update(JNIEnv* _env, jclass cls, jobject _res) {
     env = _env;
     res = _res;
+
+    glClearColor(bg_red, bg_green, bg_blue, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     update();
 
@@ -226,7 +222,7 @@ void Java_org_coco_MainActivity_update(JNIEnv* _env, jclass cls, jobject _res) {
     winLastMouseY = winMouseY;
     winLastMouseRadius = winMouseRadius;
 
-    if(!window_open) exit(0);
+    if(!open) exit(0);
 }
 
 void Java_org_coco_MainActivity_render(JNIEnv* _env, jclass cls, jobject _res) {
@@ -235,15 +231,15 @@ void Java_org_coco_MainActivity_render(JNIEnv* _env, jclass cls, jobject _res) {
 
     render();
 
-    if(!window_open) exit(0);
+    if(!open) exit(0);
 }
 
-void Java_org_coco_MainActivity_size(JNIEnv* _env, jclass cls, jobject _res, jint width, jint height) {
+void Java_org_coco_MainActivity_size(JNIEnv* _env, jclass cls, jobject _res, jint _width, jint _height) {
     env = _env;
     res = _res;
 
-    window_width = width;
-    window_height = height;
+    width = _width;
+    height = _height;
 
     glViewport(0, 0, (int)width, (int)height);
 }

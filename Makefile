@@ -1,7 +1,7 @@
 NAME := game
 ANDROID := /home/wolf/Android/Sdk/platforms/android-36/android.jar
 
-all: linux windows
+all: android
 
 linux: build/$(NAME)-linux.zip
 windows: build/$(NAME)-windows.zip

@@ -3,7 +3,7 @@
     <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="36"/>
     <uses-features android:glEsVersion="0x00030002"/>
     <uses-native-library android:name="coco"/>
-    <application android:label="Coco Engine" android:icon="@raw/test">
+    <application android:label="Coco Engine" android:icon="@raw/icon">
         <activity android:name="org.coco.MainActivity" android:exported="true" android:screenOrientation="landscape">
             <intent-filter>
                 <category android:name="android.intent.category.LAUNCHER"/>
