@@ -26,6 +26,7 @@ const int KEY_W = GLFW_KEY_W;
 const int KEY_X = GLFW_KEY_X;
 const int KEY_Y = GLFW_KEY_Y;
 const int KEY_Z = GLFW_KEY_Z;
+const int KEY_SPACE = GLFW_KEY_SPACE;
 const int KEY_DOWN = GLFW_KEY_DOWN;
 const int KEY_UP = GLFW_KEY_UP;
 const int KEY_LEFT = GLFW_KEY_LEFT;
