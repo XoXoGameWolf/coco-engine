@@ -106,6 +106,16 @@ Texture* copyTexture(Texture* orig) {
     return dest;
 }
 
+unsigned char getPixel(Texture* texture, int x, int y) {
+    if(x < 0 || x >= texture->width || y < 0 || y >= texture->height) return 0;
+    return (unsigned char)texture->data[(x + y * texture->width) * texture->channels];
+}
+
+void setPixel(Texture* texture, int x, int y, unsigned char value) {
+    if(x < 0 || x >= texture->width || y < 0 || y >= texture->height) return;
+    texture->data[(x + y * texture->width) * texture->channels] = (char)value;
+}
+
 Buffer* createFloatBuffer(float* data, int size) {
     Buffer* buffer = malloc(sizeof(Buffer));
 
