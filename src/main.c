@@ -13,7 +13,9 @@ void start() {
 
     object = createBasicShaded3D(sphere, 0.0f, 0.0f, 5.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
     cursor = createTextured2D(quad, 0.0f, 0.0f, 0.0f, 0.03f, 0.03f);
-    setTextureProperty(cursor, createTexture("resources/cursor.png", true), "tex");
+    setTextureProperty(cursor, createTexture("resources/cursor.png", true), "tex", 0);
+
+    cam_pos_z = 0.0001f;
 }
 
 void update() {
@@ -46,6 +48,8 @@ void update() {
 
     cursor->pos_x = cam_pos_x;
     cursor->pos_y = cam_pos_y;
+    cursor->scl_x = 0.03f / cam_pos_z;
+    cursor->scl_y = 0.03f / cam_pos_z;
 
     cam_rot_y = getMouseX() * 45.0f;
     cam_rot_x = getMouseY() * 45.0f;
