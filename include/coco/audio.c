@@ -2,14 +2,16 @@
 
 #include <AL/al.h>
 #include <AL/alc.h>
-#include <AL/alut.h>
+#include <tinywav.h>
+
+typedef unsigned int uint;
 
 typedef struct {
-    uint buffer;
+    unsigned int buffer;
 } Audio;
 
 typedef struct {
-    uint source;
+    unsigned int source;
 } AudioSource;
 
 ALCdevice* audioDevice;
@@ -19,17 +21,38 @@ Audio* audios[256];
 AudioSource* audioSources[256];
 
 Audio* loadAudio(char* filename) {
-    uint buffer;
+    unsigned int buffer;
     alGenBuffers(1, &buffer);
 
-    int size;
-    int freq;
-    ALenum format;
-    void* data;
-    ALboolean loop;
+    TinyWav tw;
 
-    alutLoadWAVFile(filename, &format, &data, &size, &freq, &loop);
-    alBufferData(buffer, format, data, size, freq);
+    tinywav_open_read(&tw, (const char*)filename, TW_INTERLEAVED);
+
+    int numSamples = tw.numFramesInHeader * tw.h.NumChannels;
+    float* data = malloc(sizeof(float) * numSamples);
+
+    tinywav_read_f(&tw, data, tw.numFramesInHeader);
+
+    short* pcmData = malloc(sizeof(short) * numSamples);
+    for (int i = 0; i < numSamples; i++) {
+        float clamped = fmaxf(-1.0f, fminf(1.0f, data[i]));
+        pcmData[i] = (short)(clamped * 32767.0f);
+    }
+
+    free(data);
+    tinywav_close_read(&tw);
+
+    ALenum format = (tw.h.NumChannels == 1) ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16;
+
+    alBufferData(
+        buffer,
+        format,
+        pcmData,
+        numSamples * sizeof(short),
+        tw.h.SampleRate
+    );
+
+    free(pcmData);
 
     Audio* audio = malloc(sizeof(Audio));
     audio->buffer = buffer;
@@ -55,7 +78,7 @@ void deleteAudio(Audio* audio) {
 }
 
 AudioSource* createAudioSource(Audio* audio, float pos_x, float pos_y, float pos_z, bool looping) {
-    uint source;
+    unsigned int source;
     alGenSources(1, &source);
 
     alSource3f(source, AL_POSITION, pos_x, pos_y, pos_z);

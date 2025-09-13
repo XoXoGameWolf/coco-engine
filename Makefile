@@ -1,6 +1,6 @@
 NAME := game
 
-all: linux
+all: linux windows
 
 linux: build/$(NAME)-linux.zip
 windows: build/$(NAME)-windows.zip
@@ -20,7 +20,7 @@ build/$(NAME)-windows.zip: build/app.exe
 	rm -rf $(NAME)
 
 build/app: src/* include/coco/*
-	gcc -I include -o build/app src/main.c include/glad.c -lglfw -lGL -lm -lopenal -lalut
+	gcc -I include -o build/app src/main.c include/glad.c include/tinywav.c -lglfw -lGL -lm -lopenal
 
 build/app.exe: src/* include/coco/*
-	x86_64-w64-mingw32-gcc -I include -o build/app.exe src/main.c include/glad.c -L windows -lglfw3 -lopengl32 -lm
+	x86_64-w64-mingw32-gcc -I include -o build/app.exe src/main.c include/glad.c include/tinywav.c -L windows -lglfw3 -lopengl32 -lOpenAL32 -lm
