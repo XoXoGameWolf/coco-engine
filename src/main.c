@@ -60,5 +60,5 @@ void update() {
     cam_rot_y = getMouseX() * 45.0f;
     cam_rot_x = getMouseY() * 45.0f;
 
-    setAudioSourcePos(source, cam_pos_x, cam_pos_y, cam_pos_z + 1.0f);
+    setAudioSourcePos(source, cam_pos_x, cam_pos_y, cam_pos_z);
 }
