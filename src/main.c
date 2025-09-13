@@ -8,6 +8,9 @@ float bg_blue = 0.9f;
 Object* object;
 Object* cursor;
 
+Audio* audio;
+AudioSource* source;
+
 void start() {
     Mesh* sphere = loadMesh("resources/sphere.obj");
 
@@ -16,6 +19,9 @@ void start() {
     setTextureProperty(cursor, createTexture("resources/cursor.png", true), "tex", 0);
 
     cam_pos_z = 0.0001f;
+
+    audio = loadAudio("resources/test.wav");
+    source = createAudioSource(audio, 0.0f, 0.0f, 1.0f, true);
 }
 
 void update() {
@@ -53,4 +59,6 @@ void update() {
 
     cam_rot_y = getMouseX() * 45.0f;
     cam_rot_x = getMouseY() * 45.0f;
+
+    setAudioSourcePos(source, cam_pos_x, cam_pos_y, cam_pos_z + 1.0f);
 }

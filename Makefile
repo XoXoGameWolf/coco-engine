@@ -1,7 +1,6 @@
 NAME := game
-ANDROID := /home/wolf/Android/Sdk/platforms/android-36/android.jar
 
-all: linux windows
+all: linux
 
 linux: build/$(NAME)-linux.zip
 windows: build/$(NAME)-windows.zip
@@ -21,7 +20,7 @@ build/$(NAME)-windows.zip: build/app.exe
 	rm -rf $(NAME)
 
 build/app: src/* include/coco/*
-	gcc -I include -o build/app src/main.c include/glad.c -lglfw -lGL -lm
+	gcc -I include -o build/app src/main.c include/glad.c -lglfw -lGL -lm -lopenal -lalut
 
 build/app.exe: src/* include/coco/*
 	x86_64-w64-mingw32-gcc -I include -o build/app.exe src/main.c include/glad.c -L windows -lglfw3 -lopengl32 -lm

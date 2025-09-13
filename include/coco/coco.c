@@ -35,6 +35,7 @@ void error_callback(int id, const char* description) {
 #include <coco/renderer.c>
 #include <coco/objects.c>
 #include <coco/input.c>
+#include <coco/audio.c>
 
 Mesh* quad;
 
@@ -107,6 +108,17 @@ int main() {
         indices, sizeof(int) * 6
     );
 
+    audioDevice = alcOpenDevice(NULL);
+
+    audioContext = alcCreateContext(audioDevice, NULL);
+    alcMakeContextCurrent(audioContext);
+
+    alListener3f(AL_POSITION, cam_pos_x, cam_pos_y, cam_pos_z);
+
+    for(int i = 0; i < 256; i++) {
+        audioSources[i] = 0;
+    }
+
     start();
 
     while(open) {
@@ -135,6 +147,14 @@ int main() {
 
         if(glfwWindowShouldClose(window)) {
             open = false;
+        }
+
+        alListener3f(AL_POSITION, cam_pos_x, cam_pos_y, cam_pos_z);
+        
+        for(int i = 0; i < 256; i++) {
+            if(audioSources[i] != 0 && !getAudioSourceState(audioSources[i])) {
+                deleteAudioSource(audioSources[i]);
+            }
         }
     }
 
