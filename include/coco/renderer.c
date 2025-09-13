@@ -42,6 +42,11 @@ typedef struct {
     char* data;
 } Texture;
 
+Buffer* buffers[256];
+Mesh* meshes[256];
+Shader* shaders[256];
+Texture* textures[256];
+
 Texture* createTexture(char* path, bool aliased) {
     Texture* texture = malloc(sizeof(Texture));
     texture->data = stbi_load(path, &texture->width, &texture->height, &texture->channels, 0);
@@ -64,6 +69,13 @@ Texture* createTexture(char* path, bool aliased) {
 
     glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
+
+    for(int i = 0; i < 256; i++) {
+        if(textures[i] == 0) {
+            textures[i] = texture;
+            break;
+        }
+    }
 
     return texture;
 }
@@ -127,6 +139,13 @@ Buffer* createFloatBuffer(float* data, int size) {
     glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+    for(int i = 0; i < 256; i++) {
+        if(buffers[i] == 0) {
+            buffers[i] = buffer;
+            break;
+        }
+    }
+
     return buffer;
 }
 
@@ -140,6 +159,13 @@ Buffer* createIntBuffer(int* data, int size) {
     glBindBuffer(GL_ARRAY_BUFFER, buffer->vbo);
     glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    for(int i = 0; i < 256; i++) {
+        if(buffers[i] == 0) {
+            buffers[i] = buffer;
+            break;
+        }
+    }
 
     return buffer;
 }
@@ -170,6 +196,13 @@ Mesh* createMesh(Buffer* vertexBuffer, Buffer* coordBuffer, Buffer* normalBuffer
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer->vbo);
 
     glBindVertexArray(0);
+
+    for(int i = 0; i < 256; i++) {
+        if(meshes[i] == 0) {
+            meshes[i] = mesh;
+            break;
+        }
+    }
 
     return mesh;
 }
@@ -237,6 +270,13 @@ Shader* createShader(char* vertexPath, char* fragmentPath) {
         exit(-1);
     }
 
+    for(int i = 0; i < 256; i++) {
+        if(shaders[i] == 0) {
+            shaders[i] = shader;
+            break;
+        }
+    }
+
     return shader;
 }
 
@@ -283,18 +323,46 @@ Shader* createShaderRaw(char* vertexShaderSourceDynamic, char* fragmentShaderSou
         exit(-1);
     }
 
+    for(int i = 0; i < 256; i++) {
+        if(shaders[i] == 0) {
+            shaders[i] = shader;
+            break;
+        }
+    }
+
     return shader;
 }
 
 void deleteBuffer(Buffer* buffer) {
+    for(int i = 0; i < 256; i++) {
+        if(buffers[i] == buffer) {
+            buffers[i] = 0;
+            break;
+        }
+    }
+
     glDeleteBuffers(1, &buffer->vbo);
 }
 
 void deleteMesh(Mesh* mesh) {
+    for(int i = 0; i < 256; i++) {
+        if(meshes[i] == mesh) {
+            meshes[i] = 0;
+            break;
+        }
+    }
+    
     glDeleteVertexArrays(1, &mesh->vao);
 }
 
 void deleteShader(Shader* shader) {
+    for(int i = 0; i < 256; i++) {
+        if(shaders[i] == shader) {
+            shaders[i] = 0;
+            break;
+        }
+    }
+
     glDetachShader(shader->program, shader->vertexShader);
     glDetachShader(shader->program, shader->fragmentShader);
     glDeleteShader(shader->vertexShader);
@@ -303,6 +371,12 @@ void deleteShader(Shader* shader) {
 }
 
 void deleteTexture(Texture* texture) {
+    for(int i = 0; i < 256; i++) {
+        if(textures[i] == texture) {
+            textures[i] = 0;
+        }
+    }
+
     glDeleteTextures(1, &texture->texture);
 }
 

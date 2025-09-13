@@ -75,6 +75,22 @@ int main() {
     framebuffer_size_callback(window, (int)((float)1280 * widthScale), (int)((float)720 * heightScale));
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+    audioDevice = alcOpenDevice(NULL);
+
+    audioContext = alcCreateContext(audioDevice, NULL);
+    alcMakeContextCurrent(audioContext);
+
+    alListener3f(AL_POSITION, cam_pos_x, cam_pos_y, cam_pos_z);
+
+    for(int i = 0; i < 256; i++) {
+        audios[i] = 0;
+        audioSources[i] = 0;
+        buffers[i] = 0;
+        meshes[i] = 0;
+        shaders[i] = 0;
+        textures[i] = 0;
+    }
+
     float vertices[] = {
         -1.0f, -1.0f, 0.0f,
         1.0f, -1.0f, 0.0f,
@@ -108,17 +124,6 @@ int main() {
         indices, sizeof(int) * 6
     );
 
-    audioDevice = alcOpenDevice(NULL);
-
-    audioContext = alcCreateContext(audioDevice, NULL);
-    alcMakeContextCurrent(audioContext);
-
-    alListener3f(AL_POSITION, cam_pos_x, cam_pos_y, cam_pos_z);
-
-    for(int i = 0; i < 256; i++) {
-        audioSources[i] = 0;
-    }
-
     start();
 
     while(open) {
@@ -150,11 +155,32 @@ int main() {
         }
 
         alListener3f(AL_POSITION, cam_pos_x, cam_pos_y, cam_pos_z);
-        
+
         for(int i = 0; i < 256; i++) {
             if(audioSources[i] != 0 && !getAudioSourceState(audioSources[i])) {
                 deleteAudioSource(audioSources[i]);
             }
+        }
+    }
+
+    for(int i = 0; i < 256; i++) {
+        if(audios[i] != 0) {
+            deleteAudio(audios[i]);
+        }
+        if(audioSources[i] != 0) {
+            deleteAudioSource(audioSources[i]);
+        }
+        if(buffers[i] != 0) {
+            deleteBuffer(buffers[i]);
+        }
+        if(meshes[i] != 0) {
+            deleteMesh(meshes[i]);
+        }
+        if(shaders[i] != 0) {
+            deleteShader(shaders[i]);
+        }
+        if(textures[i] != 0) {
+            deleteTexture(textures[i]);
         }
     }
 

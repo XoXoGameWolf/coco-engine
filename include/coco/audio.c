@@ -15,6 +15,7 @@ typedef struct {
 ALCdevice* audioDevice;
 ALCcontext* audioContext;
 
+Audio* audios[256];
 AudioSource* audioSources[256];
 
 Audio* loadAudio(char* filename) {
@@ -33,10 +34,23 @@ Audio* loadAudio(char* filename) {
     Audio* audio = malloc(sizeof(Audio));
     audio->buffer = buffer;
 
+    for(int i = 0; i < 256; i++) {
+        if(audios[i] == 0) {
+            audios[i] = audio;
+            break;
+        }
+    }
+
     return audio;
 }
 
 void deleteAudio(Audio* audio) {
+    for(int i = 0; i < 256; i++) {
+        if(audios[i] == audio) {
+            audios[i] = 0;
+            break;
+        }
+    }
     alDeleteBuffers(1, &audio->buffer);
 }
 
