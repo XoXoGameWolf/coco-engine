@@ -26,7 +26,7 @@ Audio* loadAudio(char* filename) {
 
     TinyWav tw;
 
-    tinywav_open_read(&tw, (const char*)filename, TW_INTERLEAVED);
+    tinywav_open_read(&tw, (const char*)filename, TW_INLINE);
 
     int numSamples = tw.numFramesInHeader * tw.h.NumChannels;
     float* data = malloc(sizeof(float) * numSamples);
@@ -50,14 +50,12 @@ Audio* loadAudio(char* filename) {
         pcmData[i] = (short)(clamped * 32767.0f);
     }
 
-    ALenum format = (tw.h.NumChannels == 1) ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16;
-
     alBufferData(
         buffer,
-        format,
+        (tw.h.NumChannels == 1) ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16,
         pcmData,
         numSamples * sizeof(short),
-        tw.h.SampleRate
+        tw.h.SampleRate / 2
     );
 
     free(data);
