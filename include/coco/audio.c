@@ -34,13 +34,13 @@ Audio* loadAudio(char* filename) {
     int offset = 0;
 
     while(offset != tw.numFramesInHeader) {
-        if(tw.numFramesInHeader - offset < 1048576) {
+        if(tw.numFramesInHeader - offset < 100000) {
             tinywav_read_f(&tw, data + offset, tw.numFramesInHeader - offset);
             offset += tw.numFramesInHeader - offset;
 
         } else {
-            tinywav_read_f(&tw, data + offset, 1048576);
-            offset += 1048576;
+            tinywav_read_f(&tw, data + offset, 100000);
+            offset += 100000;
         }
     }
 

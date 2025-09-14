@@ -184,5 +184,8 @@ int main() {
         }
     }
 
+    alcDestroyContext(audioContext);
+    alcCloseDevice(audioDevice);
+
     glfwTerminate();
 }
