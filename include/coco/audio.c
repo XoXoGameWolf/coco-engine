@@ -12,6 +12,8 @@ typedef struct {
 
 typedef struct {
     unsigned int source;
+    bool camera;
+    Object* object;
 } AudioSource;
 
 ALCdevice* audioDevice;
@@ -55,7 +57,7 @@ Audio* loadAudio(char* filename) {
         (tw.h.NumChannels == 1) ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16,
         pcmData,
         numSamples * sizeof(short),
-        tw.h.SampleRate / 2
+        tw.h.SampleRate / tw.h.NumChannels
     );
 
     free(data);
@@ -92,10 +94,17 @@ AudioSource* createAudioSource(Audio* audio, float pos_x, float pos_y, float pos
     alSource3f(source, AL_POSITION, pos_x, pos_y, pos_z);
     alSourcei(source, AL_BUFFER, audio->buffer);
     alSourcei(source, AL_LOOPING, looping ? 1 : 0);
+    alSourcei(source, AL_REFERENCE_DISTANCE, 8.0f);
+    alSourcei(source, AL_MAX_DISTANCE, 32.0f);
+    alSourcei(source, AL_MIN_GAIN, 0.0f);
+    alSourcei(source, AL_MAX_GAIN, 1.0f);
+    alSourcei(source, AL_GAIN, 1.0f);
     alSourcePlay(source);
 
     AudioSource* audioSource = malloc(sizeof(AudioSource));
     audioSource->source = source;
+    audioSource->camera = false;
+    audioSource->object = 0;
 
     for(int i = 0; i < 256; i++) {
         if(audioSources[i] == 0) {

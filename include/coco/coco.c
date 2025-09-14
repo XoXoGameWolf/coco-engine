@@ -134,6 +134,26 @@ int main() {
         render();
         bool lastF11 = glfwGetKey(window, GLFW_KEY_F11);
 
+        alListener3f(AL_POSITION, cam_pos_x, cam_pos_y, cam_pos_z);
+
+        for(int i = 0; i < 256; i++) {
+            if(audioSources[i] != 0 && !getAudioSourceState(audioSources[i])) {
+                deleteAudioSource(audioSources[i]);
+            }
+
+            if(audioSources[i] != 0 && audioSources[i]->camera) {
+                setAudioSourcePos(audioSources[i], cam_pos_x, cam_pos_y, cam_pos_z);
+            }
+
+            if(audioSources[i] != 0 && audioSources[i]->object != 0) {
+                setAudioSourcePos(audioSources[i], 
+                    audioSources[i]->object->pos_x, 
+                    audioSources[i]->object->pos_y, 
+                    audioSources[i]->object->pos_z
+                );
+            }
+        }
+
         glfwSwapBuffers(window);
         glfwPollEvents();
 
@@ -152,14 +172,6 @@ int main() {
 
         if(glfwWindowShouldClose(window)) {
             open = false;
-        }
-
-        alListener3f(AL_POSITION, cam_pos_x, cam_pos_y, cam_pos_z);
-
-        for(int i = 0; i < 256; i++) {
-            if(audioSources[i] != 0 && !getAudioSourceState(audioSources[i])) {
-                deleteAudioSource(audioSources[i]);
-            }
         }
     }
 

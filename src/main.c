@@ -21,7 +21,8 @@ void start() {
     cam_pos_z = 0.0001f;
 
     audio = loadAudio("resources/test.wav");
-    source = createAudioSource(audio, 0.0f, 0.0f, 1.0f, true);
+    source = createAudioSource(audio, 0.0f, 0.0f, 0.0f, true);
+    source->object = object;
 }
 
 void update() {
@@ -59,6 +60,4 @@ void update() {
 
     cam_rot_y = getMouseX() * 45.0f;
     cam_rot_x = getMouseY() * 45.0f;
-
-    setAudioSourcePos(source, cam_pos_x, cam_pos_y, cam_pos_z);
 }
