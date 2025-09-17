@@ -42,10 +42,17 @@ typedef struct {
     char* data;
 } Texture;
 
+typedef struct {
+    int fbo;
+    Texture* texture;
+    Texture* depth;
+} Viewport;
+
 Buffer* buffers[256];
 Mesh* meshes[256];
 Shader* shaders[256];
 Texture* textures[256];
+Viewport* viewports[256];
 
 Texture* createTexture(char* path, bool aliased) {
     Texture* texture = malloc(sizeof(Texture));
@@ -78,6 +85,116 @@ Texture* createTexture(char* path, bool aliased) {
     }
 
     return texture;
+}
+
+Texture* createEmptyTexture(bool aliased) {
+    Texture* texture = malloc(sizeof(Texture));
+    texture->channels = 3;
+    texture->width = width;
+    texture->height = height;
+
+    glGenTextures(1, &texture->texture);
+    glBindTexture(GL_TEXTURE_2D, texture->texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    if (aliased) {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    } else {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    }
+
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    for(int i = 0; i < 256; i++) {
+        if(textures[i] == 0) {
+            textures[i] = texture;
+            break;
+        }
+    }
+
+    return texture;
+}
+
+Texture* createEmptyDepthTexture(bool aliased) {
+    Texture* texture = malloc(sizeof(Texture));
+    texture->channels = 3;
+    texture->width = width;
+    texture->height = height;
+
+    glGenTextures(1, &texture->texture);
+    glBindTexture(GL_TEXTURE_2D, texture->texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    if (aliased) {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    } else {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    }
+
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    for(int i = 0; i < 256; i++) {
+        if(textures[i] == 0) {
+            textures[i] = texture;
+            break;
+        }
+    }
+
+    return texture;
+}
+
+Viewport* createViewport() {
+    Viewport* viewport = malloc(sizeof(Viewport));
+    viewport->texture = createEmptyTexture(false);
+    viewport->depth = createEmptyDepthTexture(false);
+
+    glGenFramebuffers(1, &viewport->fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, viewport->fbo);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, viewport->texture->texture, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, viewport->depth->texture, 0);
+
+    float widthScale;
+    float heightScale;
+
+    glfwGetWindowContentScale(window, &widthScale, &heightScale);
+    glViewport(0, 0, (int)((float)width * widthScale), (int)((float)height * heightScale));
+
+    glEnable(GL_DEPTH_TEST);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    for(int i = 0; i < 256; i++) {
+        if(viewports[i] == 0) {
+            viewports[i] = viewport;
+            break;
+        }
+    }
+
+    return viewport;
+}
+
+void deleteViewport(Viewport* viewport) {
+    for(int i = 0; i < 256; i++) {
+        if(viewports[i] == viewport) {
+            viewports[i] = 0;
+            break;
+        }
+    }
+
+    glDeleteFramebuffers(1, &viewport->fbo);
 }
 
 void saveTexture(char* path, Texture* texture) {

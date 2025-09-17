@@ -11,12 +11,17 @@ Object* cursor;
 Audio* audio;
 AudioSource* source;
 
+Viewport* viewport;
+
 void start() {
     Mesh* sphere = loadMesh("resources/sphere.obj");
 
-    object = createBasicShaded3D(sphere, 0.0f, 0.0f, 5.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
+    object = createTexturedShaded3D(sphere, 0.0f, 0.0f, 5.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
     cursor = createTextured2D(quad, 0.0f, 0.0f, 0.0f, 0.03f, 0.03f);
     setTextureProperty(cursor, createTexture("resources/cursor.png", true), "tex", 0);
+
+    viewport = createViewport();
+    setTextureProperty(object, viewport->texture, "tex", 1);
 
     cam_pos_z = 0.0001f;
 
@@ -27,12 +32,13 @@ void start() {
 
 void update() {
     object->pos_x = sin(3.0f * getTime());
-    setColorProperty(object, 
+    /*setColorProperty(object, 
         sin(3.0f * getTime()) / 2.0f + 0.5f, 
         sin(3.0f * getTime() + 10.0f) / 2.0f + 0.5f, 
         sin(3.0f * getTime() + 20.0f) / 2.0f + 0.5f,
         "col"
-    );
+    );*/
+    setTextureProperty(object, viewport->texture, "tex", 1);
 
     if(getKey(KEY_W)) {
         cam_pos_z += 0.1f;

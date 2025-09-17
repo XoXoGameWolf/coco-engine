@@ -122,19 +122,33 @@ Object* createTexturedShaded3D(Mesh* mesh,
     return createObject3D(mesh, fragment_textured_shaded, pos_x, pos_y, pos_z, rot_x, rot_y, rot_z, scl_x, scl_y, scl_z);
 }
 
+void renderObject(Object* object) {
+    if(object == NULL) return;
+
+    setUniformVec3(object->shader, "pos", object->pos_x, object->pos_y, object->pos_z);
+    setUniformVec3(object->shader, "rot", object->rot_x, object->rot_y, object->rot_z);
+    setUniformVec3(object->shader, "scl", object->scl_x, object->scl_y, object->scl_z);
+    setUniformVec3(object->shader, "cam_pos", cam_pos_x, cam_pos_y, cam_pos_z);
+    setUniformVec3(object->shader, "cam_rot", cam_rot_x, cam_rot_y, cam_rot_z);
+    setUniformFloat(object->shader, "aspect", (float)width / (float)height);
+    renderMesh(object->mesh, object->shader);
+}
+
 void render() {
-    for(int i = 0; i < 1024; i++) {
-        Object* object = objects[i];
-        if(object == NULL) {
-            break;
+    for(int i = 0; i < 256; i++) {
+        if(viewports[i] == 0) continue;
+
+        glBindFramebuffer(GL_FRAMEBUFFER, viewports[i]->fbo);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        for(int j = 0; j < 1024; j++) {
+            renderObject(objects[j]);
         }
 
-        setUniformVec3(object->shader, "pos", object->pos_x, object->pos_y, object->pos_z);
-        setUniformVec3(object->shader, "rot", object->rot_x, object->rot_y, object->rot_z);
-        setUniformVec3(object->shader, "scl", object->scl_x, object->scl_y, object->scl_z);
-        setUniformVec3(object->shader, "cam_pos", cam_pos_x, cam_pos_y, cam_pos_z);
-        setUniformVec3(object->shader, "cam_rot", cam_rot_x, cam_rot_y, cam_rot_z);
-        setUniformFloat(object->shader, "aspect", (float)width / (float)height);
-        renderMesh(object->mesh, object->shader);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    for(int i = 0; i < 1024; i++) {
+        renderObject(objects[i]);
     }
 }

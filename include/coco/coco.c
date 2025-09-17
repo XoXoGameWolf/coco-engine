@@ -20,7 +20,21 @@ bool lastFullscreen = false;
 bool fullscreen = false;
 bool open = true;
 
+void framebuffer_size_callback(GLFWwindow* window, int _width, int _height);
+
+#include <coco/renderer.c>
+#include <coco/objects.c>
+#include <coco/input.c>
+#include <coco/audio.c>
+
 void framebuffer_size_callback(GLFWwindow* window, int _width, int _height) {
+    for(int i = 0; i < 256; i++) {
+        if(viewports[i] == 0) continue;
+        glBindFramebuffer(GL_FRAMEBUFFER, viewports[i]->fbo);
+        glViewport(0, 0, _width, _height);
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, _width, _height);
 }
 
@@ -31,11 +45,6 @@ void error_callback(int id, const char* description) {
     }
     printf("GLFW had an error: \n%s\n", description);
 }
-
-#include <coco/renderer.c>
-#include <coco/objects.c>
-#include <coco/input.c>
-#include <coco/audio.c>
 
 Mesh* quad;
 
