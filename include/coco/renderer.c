@@ -39,14 +39,20 @@ typedef struct {
     int width;
     int height;
     int channels;
-    char* data;
 } Texture;
 
 typedef struct {
     int fbo;
     Texture* texture;
     Texture* depth;
+    Texture* texture2;
 } Viewport;
+
+typedef struct {
+    unsigned char r;
+    unsigned char g;
+    unsigned char b;
+} Color;
 
 Buffer* buffers[256];
 Mesh* meshes[256];
@@ -56,12 +62,12 @@ Viewport* viewports[256];
 
 Texture* createTexture(char* path, bool aliased) {
     Texture* texture = malloc(sizeof(Texture));
-    texture->data = stbi_load(path, &texture->width, &texture->height, &texture->channels, 0);
+    unsigned char* data = stbi_load(path, &texture->width, &texture->height, &texture->channels, 0);
 
     glGenTextures(1, &texture->texture);
     glBindTexture(GL_TEXTURE_2D, texture->texture);
     glTexImage2D(GL_TEXTURE_2D, 0, texture->channels == 4 ? GL_RGBA : GL_RGB, texture->width, texture->height,
-                 0, texture->channels == 4 ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, texture->data);
+                 0, texture->channels == 4 ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, data);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -87,7 +93,7 @@ Texture* createTexture(char* path, bool aliased) {
     return texture;
 }
 
-Texture* createEmptyTexture(bool aliased) {
+Texture* createEmptyTexture(int width, int height, bool aliased) {
     Texture* texture = malloc(sizeof(Texture));
     texture->channels = 3;
     texture->width = width;
@@ -121,7 +127,7 @@ Texture* createEmptyTexture(bool aliased) {
     return texture;
 }
 
-Texture* createEmptyDepthTexture(bool aliased) {
+Texture* createEmptyDepthTexture(int width, int height, bool aliased) {
     Texture* texture = malloc(sizeof(Texture));
     texture->channels = 3;
     texture->width = width;
@@ -157,8 +163,10 @@ Texture* createEmptyDepthTexture(bool aliased) {
 
 Viewport* createViewport() {
     Viewport* viewport = malloc(sizeof(Viewport));
-    viewport->texture = createEmptyTexture(false);
-    viewport->depth = createEmptyDepthTexture(false);
+
+    viewport->texture = createEmptyTexture(width, height, false);
+    viewport->depth = createEmptyDepthTexture(width, height, false);
+    viewport->texture2 = createEmptyTexture(width, height, false);
 
     glGenFramebuffers(1, &viewport->fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, viewport->fbo);
@@ -166,13 +174,13 @@ Viewport* createViewport() {
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, viewport->texture->texture, 0);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, viewport->depth->texture, 0);
 
+    glEnable(GL_DEPTH_TEST);
+
     float widthScale;
     float heightScale;
 
     glfwGetWindowContentScale(window, &widthScale, &heightScale);
     glViewport(0, 0, (int)((float)width * widthScale), (int)((float)height * heightScale));
-
-    glEnable(GL_DEPTH_TEST);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -198,51 +206,56 @@ void deleteViewport(Viewport* viewport) {
 }
 
 void saveTexture(char* path, Texture* texture) {
-    stbi_write_png(path, texture->width, texture->height, texture->channels, texture->data, 0);
-}
-
-void updateTexture(Texture* texture, bool aliased) {
-    glDeleteTextures(1, &texture->texture);
-
-    glGenTextures(1, &texture->texture);
+    unsigned char data[texture->width * texture->height * texture->channels];
 
     glBindTexture(GL_TEXTURE_2D, texture->texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, (texture->channels == 4 ? GL_RGBA : GL_RGB), GL_UNSIGNED_BYTE, texture->data);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    if(aliased) {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    } else {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    }
-    glGenerateMipmap(GL_TEXTURE_2D);
+    glGetTexImage(GL_TEXTURE_2D, 0, texture->channels == 3 ? GL_RGB : GL_RGBA, GL_UNSIGNED_BYTE, data);
     glBindTexture(GL_TEXTURE_2D, 0);
+
+    stbi_write_png(path, texture->width, texture->height, texture->channels, data, 0);
 }
 
-Texture* copyTexture(Texture* orig) {
-    Texture* dest = malloc(sizeof(Texture));
+Texture* copyTexture(Texture* orig, bool aliased) {
+    Texture* dest = createEmptyTexture(orig->width, orig->height, aliased);
 
-    dest->width = orig->width;
-    dest->height = orig->height;
     dest->channels = orig->channels;
 
-    dest->texture = orig->texture;
-    dest->data = malloc(orig->width * orig->height * orig->channels);
-    memcpy(dest->data, orig->data, orig->width * orig->height * orig->channels);
+    glCopyImageSubData(orig->texture, GL_TEXTURE_2D, 0, 0, 0, 0, 
+                dest->texture, GL_TEXTURE_2D, 0, 0, 0, 0,
+                width, height, 1);
 
     return dest;
 }
 
-unsigned char getPixel(Texture* texture, int x, int y) {
-    if(x < 0 || x >= texture->width || y < 0 || y >= texture->height) return 0;
-    return (unsigned char)texture->data[(x + y * texture->width) * texture->channels];
+Color getPixel(Texture* texture, int x, int y) {
+    if(x < 0 || x >= texture->width || y < 0 || y >= texture->height) return (Color){0, 0, 0};
+
+    unsigned char data[texture->width * texture->height * texture->channels];
+
+    glBindTexture(GL_TEXTURE_2D, texture->texture);
+    glGetTexImage(GL_TEXTURE_2D, 0, texture->channels == 3 ? GL_RGB : GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    return (Color){
+        data[(x + y * texture->width) * texture->channels],
+        data[(x + y * texture->width) * texture->channels + 1],
+        data[(x + y * texture->width) * texture->channels + 2]
+    };
 }
 
-void setPixel(Texture* texture, int x, int y, unsigned char value) {
+void setPixel(Texture* texture, int x, int y, Color color) {
     if(x < 0 || x >= texture->width || y < 0 || y >= texture->height) return;
-    texture->data[(x + y * texture->width) * texture->channels] = (char)value;
+
+    unsigned char data[4] = {
+        color.r,
+        color.g,
+        color.b,
+        1.0f
+    };
+
+    glBindTexture(GL_TEXTURE_2D, texture->texture);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, 1, 1, texture->channels == 3 ? GL_RGB : GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 Buffer* createFloatBuffer(float* data, int size) {

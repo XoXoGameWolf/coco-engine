@@ -32,6 +32,20 @@ void framebuffer_size_callback(GLFWwindow* window, int _width, int _height) {
         if(viewports[i] == 0) continue;
         glBindFramebuffer(GL_FRAMEBUFFER, viewports[i]->fbo);
         glViewport(0, 0, _width, _height);
+        
+        deleteTexture(viewports[i]->texture);
+        deleteTexture(viewports[i]->depth);
+        deleteTexture(viewports[i]->texture2);
+
+        viewports[i]->texture = createEmptyTexture(_width, _height, false);
+        viewports[i]->depth = createEmptyDepthTexture(_width, _height, false);
+
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, viewports[i]->texture->texture, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, viewports[i]->depth->texture, 0);
+
+        viewports[i]->texture2->width = _width;
+        viewports[i]->texture2->height = _height;
+        viewports[i]->texture2->texture = createEmptyTexture(_width, _height, false)->texture;
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -166,7 +180,36 @@ int main() {
         glfwSwapBuffers(window);
         glfwPollEvents();
 
-        glfwGetWindowSize(window, &width, &height);
+        int width2;
+        int height2;
+
+        glfwGetWindowSize(window, &width2, &height2);
+
+        if(width2 != width || height2 != height) {
+            width = width2;
+            height = height2;
+
+            for(int i = 0; i < 256; i++) {
+                if(viewports[i] == 0) continue;
+                glBindFramebuffer(GL_FRAMEBUFFER, viewports[i]->fbo);
+                
+                deleteTexture(viewports[i]->texture);
+                deleteTexture(viewports[i]->depth);
+                deleteTexture(viewports[i]->texture2);
+
+                viewports[i]->texture = createEmptyTexture(width, height, false);
+                viewports[i]->depth = createEmptyDepthTexture(width, height, false);
+
+                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, viewports[i]->texture->texture, 0);
+                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, viewports[i]->depth->texture, 0);
+
+                viewports[i]->texture2->width = width;
+                viewports[i]->texture2->height = height;
+                viewports[i]->texture2->texture = createEmptyTexture(width, height, false)->texture;
+            }
+
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        }
 
         if(glfwGetKey(window, GLFW_KEY_F11) && !lastF11) {
             fullscreen = !fullscreen;
