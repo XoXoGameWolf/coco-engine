@@ -98,6 +98,11 @@ int main() {
     framebuffer_size_callback(window, (int)((float)1280 * widthScale), (int)((float)720 * heightScale));
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+    GLFWimage images[1];
+    images[0].pixels = stbi_load("resources/icon.png", &images[0].width, &images[0].height, 0, 4);
+    glfwSetWindowIcon(window, 1, images);
+    //stbi_image_free(images[0].pixels);
+
     audioDevice = alcOpenDevice(NULL);
 
     audioContext = alcCreateContext(audioDevice, NULL);
