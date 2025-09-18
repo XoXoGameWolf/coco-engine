@@ -101,7 +101,7 @@ int main() {
     GLFWimage images[1];
     images[0].pixels = stbi_load("resources/icon.png", &images[0].width, &images[0].height, 0, 4);
     glfwSetWindowIcon(window, 1, images);
-    //stbi_image_free(images[0].pixels);
+    stbi_image_free(images[0].pixels);
 
     audioDevice = alcOpenDevice(NULL);
 
