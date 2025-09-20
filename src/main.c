@@ -7,6 +7,7 @@ float bg_blue = 0.9f;
 
 Object* object;
 Object* cursor;
+Object* display;
 
 Audio* audio;
 AudioSource* source;
@@ -19,10 +20,12 @@ void start() {
 
     viewport = createViewport();
 
-    object = createTexturedShaded3D(sphere, 0.0f, 0.0f, 5.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
-    setTextureProperty(object, "tex", viewport->texture2);
+    object = createBasicShaded3D(sphere, 0.0f, 0.0f, 5.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
+    setColorProperty(object, "col", (Color){1.0f, 0.0f, 0.0f});
     cursor = createTextured2D(quad, 0.0f, 0.0f, 0.0f, 0.03f, 0.03f);
     setTextureProperty(cursor, "tex", createTexture("resources/cursor.png", true));
+    display = createTextured3D(quad, 0.0f, 3.0f, 5.0f, 0.0f, 0.0f, 0.0f, 1.0f, -1.0f, 1.0f);
+    setTextureProperty(display, "tex", viewport->texture2);
 
     cam_pos_z = 0.0001f;
 
