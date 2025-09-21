@@ -49,9 +49,9 @@ typedef struct {
 } Viewport;
 
 typedef struct {
-    unsigned char r;
-    unsigned char g;
-    unsigned char b;
+    float r;
+    float g;
+    float b;
 } Color;
 
 Buffer* buffers[256];
@@ -237,9 +237,9 @@ Color getPixel(Texture* texture, int x, int y) {
     glBindTexture(GL_TEXTURE_2D, 0);
 
     return (Color){
-        data[(x + y * texture->width) * texture->channels],
-        data[(x + y * texture->width) * texture->channels + 1],
-        data[(x + y * texture->width) * texture->channels + 2]
+        (float)data[(x + y * texture->width) * texture->channels] / 255.0f,
+        (float)data[(x + y * texture->width) * texture->channels + 1] / 255.0f,
+        (float)data[(x + y * texture->width) * texture->channels + 2] / 255.0f
     };
 }
 
@@ -247,10 +247,10 @@ void setPixel(Texture* texture, int x, int y, Color color) {
     if(x < 0 || x >= texture->width || y < 0 || y >= texture->height) return;
 
     unsigned char data[4] = {
-        color.r,
-        color.g,
-        color.b,
-        1.0f
+        (int)(color.r * 255),
+        (int)(color.g * 255),
+        (int)(color.b * 255),
+        255
     };
 
     glBindTexture(GL_TEXTURE_2D, texture->texture);
