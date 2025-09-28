@@ -26,6 +26,7 @@ void framebuffer_size_callback(GLFWwindow* window, int _width, int _height);
 #include <coco/objects.c>
 #include <coco/input.c>
 #include <coco/audio.c>
+#include <coco/text.c>
 
 void framebuffer_size_callback(GLFWwindow* window, int _width, int _height) {
     for(int i = 0; i < 256; i++) {
@@ -37,15 +38,15 @@ void framebuffer_size_callback(GLFWwindow* window, int _width, int _height) {
         deleteTexture(viewports[i]->depth);
         deleteTexture(viewports[i]->texture2);
 
-        viewports[i]->texture = createEmptyTexture(_width, _height, false);
-        viewports[i]->depth = createEmptyDepthTexture(_width, _height, false);
+        viewports[i]->texture = createEmptyTexture(_width, _height, 3, false);
+        viewports[i]->depth = createEmptyTexture(_width, _height, 0, false);
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, viewports[i]->texture->texture, 0);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, viewports[i]->depth->texture, 0);
 
         viewports[i]->texture2->width = _width;
         viewports[i]->texture2->height = _height;
-        viewports[i]->texture2->texture = createEmptyTexture(_width, _height, false)->texture;
+        viewports[i]->texture2->texture = createEmptyTexture(_width, _height, 3, false)->texture;
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -152,6 +153,8 @@ int main() {
         indices, sizeof(int) * 6
     );
 
+    FT_Init_FreeType(&text_lib);
+
     start();
 
     while(open) {
@@ -202,15 +205,15 @@ int main() {
                 deleteTexture(viewports[i]->depth);
                 deleteTexture(viewports[i]->texture2);
 
-                viewports[i]->texture = createEmptyTexture(width, height, false);
-                viewports[i]->depth = createEmptyDepthTexture(width, height, false);
+                viewports[i]->texture = createEmptyTexture(width, height, 3, false);
+                viewports[i]->depth = createEmptyTexture(width, height, 0, false);
 
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, viewports[i]->texture->texture, 0);
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, viewports[i]->depth->texture, 0);
 
                 viewports[i]->texture2->width = width;
                 viewports[i]->texture2->height = height;
-                viewports[i]->texture2->texture = createEmptyTexture(width, height, false)->texture;
+                viewports[i]->texture2->texture = createEmptyTexture(width, height, 3, false)->texture;
             }
 
             glBindFramebuffer(GL_FRAMEBUFFER, 0);

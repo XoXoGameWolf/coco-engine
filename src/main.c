@@ -5,6 +5,8 @@ float bg_blue = 0.9f;
 
 #include <coco/coco.c>
 
+Mesh* sphere;
+
 Object* object;
 Object* cursor;
 Object* display;
@@ -15,10 +17,14 @@ AudioSource* source;
 Viewport* viewport;
 Texture* viewportTex;
 
-void start() {
-    Mesh* sphere = loadMesh("resources/sphere.obj");
+Font* font;
 
+void start() {
+    sphere = loadMesh("resources/sphere.obj");
+    //font = loadFont("resources/FreeSerif.ttf");
     viewport = createViewport();
+
+    //getChar(font, 'A');
 
     object = createBasicShaded3D(sphere, 0.0f, 0.0f, 5.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
     setColorProperty(object, "col", (Color){1.0f, 0.0f, 0.0f});
