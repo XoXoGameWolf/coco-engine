@@ -60,12 +60,6 @@ Shader* shaders[256];
 Texture* textures[256];
 Viewport* viewports[256];
 
-const int R = GL_RED;
-const int RG = GL_RG;
-const int RGB = GL_RGB;
-const int RGBA = GL_RGBA;
-const int DEPTH = GL_DEPTH_COMPONENT24;
-
 Texture* createTexture(char* path, bool aliased) {
     Texture* texture = malloc(sizeof(Texture));
     unsigned char* data = stbi_load(path, &texture->width, &texture->height, &texture->channels, 0);
@@ -261,12 +255,6 @@ Viewport* createViewport() {
 
     glEnable(GL_DEPTH_TEST);
 
-    float widthScale;
-    float heightScale;
-
-    glfwGetWindowContentScale(window, &widthScale, &heightScale);
-    glViewport(0, 0, (int)((float)width * widthScale), (int)((float)height * heightScale));
-
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     for(int i = 0; i < 256; i++) {
@@ -321,13 +309,13 @@ void saveTexture(char* path, Texture* texture) {
 }
 
 Texture* copyTexture(Texture* orig, bool aliased) {
-    Texture* dest = createEmptyTexture(orig->width, orig->height, 3, aliased);
+    Texture* dest = createEmptyTexture(orig->width, orig->height, orig->channels, aliased);
 
     dest->channels = orig->channels;
 
     glCopyImageSubData(orig->texture, GL_TEXTURE_2D, 0, 0, 0, 0, 
                 dest->texture, GL_TEXTURE_2D, 0, 0, 0, 0,
-                width, height, 1);
+                orig->width, orig->height, 1);
 
     return dest;
 }
@@ -800,4 +788,36 @@ Mesh* loadMesh(char* path) {
     int index_count = mesh->geometry->indice_n * sizeof(int);
 
     return createMeshFast(vertices, vertex_count, coords, coord_count, normals, normal_count, indices, index_count);
+}
+
+Mesh* quad;
+Shader* flipShader;
+
+void flipTexture(Texture* tex, bool x, bool y) {
+    Texture* tex2 = copyTexture(tex, false);
+
+    int fbo;
+
+    glGenFramebuffers(1, &fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex->texture, 0);
+
+    glViewport(0, 0, tex->width, tex->height);
+
+    setUniformVec2(flipShader, "flip", x, y);
+    setUniformTexture(flipShader, "tex", tex2, 0);
+
+    renderMesh(quad, flipShader);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glDeleteFramebuffers(1, &fbo);
+
+    float widthScale;
+    float heightScale;
+
+    glfwGetWindowContentScale(window, &widthScale, &heightScale);
+    glViewport(0, 0, (int)((float)width * widthScale), (int)((float)height * heightScale));
+
+    deleteTexture(tex2);
 }

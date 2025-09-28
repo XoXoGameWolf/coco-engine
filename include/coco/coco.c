@@ -22,6 +22,9 @@ bool open = true;
 
 void framebuffer_size_callback(GLFWwindow* window, int _width, int _height);
 
+char* flipShader_vert = "#version 330 core\nprecision mediump float;\nprecision mediump int;\n\nuniform vec2 flip;\n\nin vec3 in_pos;\nin vec2 in_coord;\nin vec3 in_normal;\nout vec2 coord;\n\nvoid main() {\n    coord.x = flip.x == 1 ? in_coord.x : 1 - in_coord.x;\n    coord.y = flip.y == 1 ? in_coord.y : 1 - in_coord.y;\n    gl_Position = vec4(in_pos, 1);\n}";
+char* flipShader_frag = "#version 330 core\nprecision mediump float;\nprecision mediump int;\n\nuniform sampler2D tex;\n\nin vec2 coord;\nout vec4 out_color;\n\nvoid main() {\n    out_color = texture(tex, coord);\n}";
+
 #include <coco/renderer.c>
 #include <coco/objects.c>
 #include <coco/input.c>
@@ -60,8 +63,6 @@ void error_callback(int id, const char* description) {
     }
     printf("GLFW had an error: \n%s\n", description);
 }
-
-Mesh* quad;
 
 int main() {
     glfwSetErrorCallback(&error_callback);
@@ -154,6 +155,8 @@ int main() {
     );
 
     FT_Init_FreeType(&text_lib);
+
+    flipShader = createShaderRaw(flipShader_vert, flipShader_frag);
 
     start();
 

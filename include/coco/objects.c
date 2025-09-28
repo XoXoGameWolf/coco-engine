@@ -209,6 +209,8 @@ void renderObject(Object* object) {
 }
 
 void render() {
+    glViewport(0, 0, width, height);
+
     for(int i = 0; i < 256; i++) {
         if(viewports[i] == 0) continue;
 
@@ -222,9 +224,17 @@ void render() {
         glCopyImageSubData(viewports[i]->texture->texture, GL_TEXTURE_2D, 0, 0, 0, 0, 
                 viewports[i]->texture2->texture, GL_TEXTURE_2D, 0, 0, 0, 0,
                 width, height, 1);
+        
+        flipTexture(viewports[i]->texture2, true, true);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
+
+    float widthScale;
+    float heightScale;
+
+    glfwGetWindowContentScale(window, &widthScale, &heightScale);
+    glViewport(0, 0, (int)((float)width * widthScale), (int)((float)height * heightScale));
 
     for(int i = 0; i < 1024; i++) {
         renderObject(objects[i]);
