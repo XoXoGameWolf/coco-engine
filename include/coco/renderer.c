@@ -70,30 +70,36 @@ Texture* createTexture(char* path, bool aliased) {
     Texture* texture = malloc(sizeof(Texture));
     unsigned char* data = stbi_load(path, &texture->width, &texture->height, &texture->channels, 0);
 
-    int channels;
+    int _channels;
+    int _channels2;
 
     switch(texture->channels) {
         case(0):
-            channels = GL_DEPTH_COMPONENT24;
+            _channels = GL_DEPTH_COMPONENT24;
+            _channels2 = GL_DEPTH_COMPONENT;
             break;
         case(1):
-            channels = GL_RED;
+            _channels = GL_RED;
+            _channels2 = GL_RED;
             break;
         case(2):
-            channels = GL_RG;
+            _channels = GL_RG;
+            _channels2 = GL_RG;
             break;
         case(3):
-            channels = GL_RGB;
+            _channels = GL_RGB;
+            _channels2 = GL_RGB;
             break;
         case(4):
-            channels = GL_RGBA;
+            _channels = GL_RGBA;
+            _channels2 = GL_RGBA;
             break;
     }
 
     glGenTextures(1, &texture->texture);
     glBindTexture(GL_TEXTURE_2D, texture->texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, channels, texture->width, texture->height,
-                 0, channels, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, _channels, texture->width, texture->height,
+                 0, _channels2, GL_UNSIGNED_BYTE, data);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -126,29 +132,35 @@ Texture* createTextureMemory(unsigned char* data, int width, int height, int cha
     texture->channels = channels;
 
     int _channels;
+    int _channels2;
 
     switch(channels) {
         case(0):
             _channels = GL_DEPTH_COMPONENT24;
+            _channels2 = GL_DEPTH_COMPONENT;
             break;
         case(1):
             _channels = GL_RED;
+            _channels2 = GL_RED;
             break;
         case(2):
             _channels = GL_RG;
+            _channels2 = GL_RG;
             break;
         case(3):
             _channels = GL_RGB;
+            _channels2 = GL_RGB;
             break;
         case(4):
             _channels = GL_RGBA;
+            _channels2 = GL_RGBA;
             break;
     }
 
     glGenTextures(1, &texture->texture);
     glBindTexture(GL_TEXTURE_2D, texture->texture);
     glTexImage2D(GL_TEXTURE_2D, 0, _channels, texture->width, texture->height,
-                 0, _channels, GL_UNSIGNED_BYTE, data);
+                 0, _channels2, GL_UNSIGNED_BYTE, data);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
