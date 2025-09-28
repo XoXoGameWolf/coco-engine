@@ -54,6 +54,9 @@ void framebuffer_size_callback(GLFWwindow* window, int _width, int _height) {
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, _width, _height);
+
+    width = _width;
+    height = _height;
 }
 
 void error_callback(int id, const char* description) {

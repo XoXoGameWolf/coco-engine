@@ -12,7 +12,7 @@ typedef struct {
 Font* loadFont(char* path) {
     Font* font = malloc(sizeof(Font));
     FT_New_Face(text_lib, path, 0, &font->face);
-    FT_Set_Char_Size(font->face, 0, 64 * 64, 200, 200);
+    FT_Set_Char_Size(font->face, 0, 64 * 64, 300, 300);
     return font;
 }
 
@@ -25,7 +25,15 @@ Texture* getChar(Font* font, char character) {
     int width = font->face->glyph->bitmap.width;
     int height = font->face->glyph->bitmap.rows;
 
-    Texture* texture = createTextureMemory(buf, width, height, 1, false);
-    flipTexture(texture, true, false);
+    unsigned char* buf2 = malloc(width * height * 4);
+
+    for(int i = 0; i < width * height; i++) {
+        buf2[i * 4] = 255;
+        buf2[i * 4 + 1] = 255;
+        buf2[i * 4 + 2] = 255;
+        buf2[i * 4 + 3] = buf[i];
+    }
+
+    Texture* texture = createTextureMemory(buf2, width, height, 4, true);
     return texture;
 }

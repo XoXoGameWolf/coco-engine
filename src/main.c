@@ -32,7 +32,7 @@ void start() {
     display = createTextured3D(quad, 0.0f, 3.0f, 5.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
     setTextureProperty(display, "tex", viewport->texture2);
     text = createTextured3D(quad, 3.0f, 0.0f, 5.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
-    setTextureProperty(text, "tex", getChar(font, 'A'));
+    setTextureProperty(text, "tex", getChar(font, 'B'));
 
     cam_pos_z = 0.0001f;
 
